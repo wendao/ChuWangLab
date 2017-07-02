@@ -1,0 +1,7 @@
+AuthUserFile ./.htpasswd
+AuthName  WangchuLab_Intranet
+AuthType Basic
+
+<Limit GET>
+require valid-user
+</Limit>
