@@ -37,6 +37,10 @@ sc_cut = float(sys.argv[1])
 modstr = sys.argv[2]
 style = sys.argv[3]
 
+# parsing the modification description string
+# elements split by |
+# each element has 3/4 components split by ,
+# AA, diffmass, [H/L], [marker]
 mod_lst = []
 std_lst = {}
 for mod in modstr.split('|'):
@@ -58,12 +62,12 @@ scan_lst = []
 cross_tab = {}
 
 def get_label( labels, seq ):
-  #label H/L based on pos
-  #return all H or all L, otherwise NULL
+  # label H/L based on modified pos
+  # return all H or all L, otherwise NULL
   for n,a in enumerate(seq):
-    #has aa
+    # has aa
     if a in std_lst.keys():
-      #not labeled
+      # not labeled
       if n not in labels.keys():
         labels[n]=std_lst[a]
   uniq_label = []
@@ -141,24 +145,22 @@ def process_scan( hit, scan_id, neutral_mass, rt, charge ):
   if style in ["pep", "pos"]:
     if len(markers)==0:
       return
-  #check labels
+  # check labels
   label = get_label( labels, seq )
-  #print "-----"
-  #print label
   if label != "NULL":
-    #add protein
+    # add protein
     if pro not in ipi_lst.keys():
       ipi_lst[pro] = 1
     else:
       ipi_lst[pro] = ipi_lst[pro]+1
     gene = pro.split()[0].split('|')[1]
     if pro[:7] == "Reverse": gene = "Reverse_" + gene
-    #add scan
+    # add scan
     all_seq = mark_seq(uAA, seq, dAA, markers)
     #print all_seq
-    scan_key = gene+":"+all_seq+":"+str(charge)+":"+fn_ndx
-    scan_lst.append(scan_key+" "+com_fn+" "+str(scan_id)+" "+label+"\n")
-    #add cross
+    scan_key = gene + ":" + all_seq + ":" + str(charge) + ":" + fn_ndx
+    scan_lst.append(scan_key + " " + com_fn + " " + str(scan_id) + " " + label + "\n")
+    # add cross
     if scan_key not in cross_tab.keys():
         cross_tab[scan_key] = []
     cross_tab[scan_key].append((neutral_mass, scan_id, score))
@@ -169,7 +171,7 @@ def get_symbol(disc):
   if "GN=" in disc:
     #get from record
     for elem in elems:
-      if elem[:3]=="GN=":
+      if elem[:3] == "GN=":
         gene = elem[3:]
   else:
     gene = elems[0]
