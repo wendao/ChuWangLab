@@ -214,10 +214,12 @@ if style == "pro":
 else:
   out_ipi_lst = [ p for p in ipi_lst.keys() if ipi_lst[p]>=1 ]
 
+out_uni_lst = []
 for pro in out_ipi_lst:
     #skip rev decoys ?
     elems = pro.split('|')
     ipi = elems[1] #uniprot actually
+    out_uni_lst.append(ipi)
     disc = elems[2]
     tmp = disc.split()
     gene = tmp[0]
@@ -250,13 +252,16 @@ ipiout.close()
 scanout = open("all_scan.table", 'w')
 scanout.write("key run scan HL\n")
 for scan in scan_lst:
-    scanout.write(scan)
+    uni = scan.split(":")[0]
+    if uni in out_uni_lst: scanout.write(scan)
 scanout.close()
 
 #save cross_scan.table
 crossout = open("cross_scan.table", 'w')
 crossout.write( "key mass %s\n" % (com_fn) )
 for scan_core in cross_tab.keys():
+    uni = scan_core.split(":")[0]
+    if uni not in out_uni_lst: continue
     rank = sorted( cross_tab[scan_core], key=lambda x: x[2] )
     neutral_mass = rank[-1][0]
     id_scan = rank[-1][1]
