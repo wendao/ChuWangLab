@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+
+import ms, sys
+from math import fabs
+
+fn = sys.argv[1]
+finger_print = sys.argv[2:]
+
+loader = ms.load_ms(fn)
+mod = []
+for f in finger_print:
+  mod.append( float(f) )
+tol = 20
+
+for sp in loader:
+  cutoff = sp.maxint / 20.0
+  hit =  [ False ] * len(mod)
+  loss_hit = {}
+  printed = False
+  for peak in sp.peaks:
+    if peak[1] > cutoff:
+      #check neutral loss
+      for n, m in enumerate(mod):
+        if m in loss_hit.keys(): continue
+        loss_mz = sp.mz - m / sp.charge 
+        if fabs(peak[0]-loss_mz)<tol*peak[0]*ms.ppm:
+          loss_hit[m] = peak
+      #check figureprint
+      for n, m in enumerate(mod):
+        if hit[n]: continue #skip
+        if fabs(peak[0]-m)<tol*peak[0]*ms.ppm:
+          hit[n] = True
+          break
+      #output
+      if all(hit):
+        if not printed:
+          print fn + ":" + str(sp.scan),
+          printed = True
+        if len(loss_hit.keys()) == len(mod):
+          #break if everthing is found
+          break
+  if all(hit):
+    for k in loss_hit.keys():
+      print k, loss_hit[k],
+    print
