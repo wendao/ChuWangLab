@@ -173,8 +173,11 @@ def get_symbol(disc):
     for elem in elems:
       if elem[:3] == "GN=":
         gene = elem[3:]
-  else:
+  elif len(elems)>0:
     gene = elems[0]
+  else:
+    gene = "NULL"
+    print disc
   return gene
 
 #loop all pepXML file
@@ -197,9 +200,13 @@ for fn in sys.argv[4:]:
     for summary in root.findall('pep:msms_run_summary', ns):
       for query in summary.findall('pep:spectrum_query', ns):
         #print query.attrib['spectrum'], query.attrib['index'], query.attrib['assumed_charge'], query.attrib['precursor_neutral_mass']
-        scan_id = int(query.attrib['spectrum'].split('|')[-1])
+        scan_id = int(query.attrib['start_scan'])
+        if scan_id == 0: #for fixed mgf
+          scan_id = int(query.attrib['spectrum'].split('|')[-1])
         mass = float(query.attrib['precursor_neutral_mass'])
-        rt = float(query.attrib['retention_time_sec'])
+        rt = 0.0
+        if 'retention_time_sec' in query.attrib.keys():
+          rt = float(query.attrib['retention_time_sec'])
         charge = int(query.attrib['assumed_charge'])
         for result in query.findall('pep:search_result', ns):
           for hit in result.findall('pep:search_hit', ns):
