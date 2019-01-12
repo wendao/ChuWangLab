@@ -53,24 +53,24 @@ sc_cut = float(sys.argv[2])
 for mod in sys.argv[3].split('|'):
     elems = mod.split(':')
     AA = elems[0]
-    mass = float(elems[1])
+    mod_mass = float(elems[1])
     tag = elems[2]
-    L_labels.append((AA, mass, tag))
+    L_labels.append((AA, mod_mass, tag))
 for mod in sys.argv[4].split('|'):
     elems = mod.split(':')
     AA = elems[0]
-    mass = float(elems[1])
+    mod_mass = float(elems[1])
     tag = elems[2]
-    H_labels.append((AA, mass, tag))
+    H_labels.append((AA, mod_mass, tag))
 for mod in sys.argv[5].split('|'):
     elems = mod.split(':')
     AA = elems[0]
-    mass = float(elems[1])
+    mod_mass = float(elems[1])
     tag = elems[2]
     if AA[0] == "n":
-        norm_nterm_labels.append((AA, mass, tag))
+        norm_nterm_labels.append((AA, mod_mass, tag))
     else:
-        norm_labels.append((AA, mass, tag))
+        norm_labels.append((AA, mod_mass, tag))
 
 print L_labels
 print H_labels
@@ -80,10 +80,6 @@ print norm_nterm_labels
 pepxml_dir = {}
 pepxml_dir["light"] = sys.argv[6]
 pepxml_dir["heavy"] = sys.argv[7]
-
-ipi_lst = {}
-scan_lst = []
-cross_tab = {}
 
 def mark_seq(uAA, seq, dAA, markers):
   #print markers
@@ -184,9 +180,9 @@ for tag in [ "light", "heavy" ]:
                             #check others
                             for mod in mod_info.findall('pep:mod_aminoacid_mass', ns):
                                 ndx = int(mod.attrib['position'])-1
-                                mass = float(mod.attrib['mass'])
-                                ideal_mass = mass_norm_AA[seq[ndx]]
-                                diff_mass = mass - ideal_mass
+                                mod_mass = float(mod.attrib['mass']) #modified mass in pepxml
+                                ideal_mass = mass_norm_AA[seq[ndx]]  #ideal AA mass
+                                diff_mass = mod_mass - ideal_mass    #mass of modification
                                 #check label mod
                                 for m in mod_list:
                                     if m[0] == seq[ndx] and fabs(diff_mass-m[1]) <= mass_tol: #AA
@@ -210,8 +206,13 @@ for tag in [ "light", "heavy" ]:
                                             break
                                 if len(norm_nterm_labels)>0:
                                     for nl in norm_nterm_labels:
+                                        #protein N-term
                                         if nl[0] == "nt" and uAA!="-": continue
-                                        print mod_nterm_mass, mass_norm_AA["n"], nl[1]
+                                        #peptide N-term
+                                        #print mod_nterm_mass, mass_norm_AA["n"], nl[1]
+                                        #mod_nterm_mass
+                                        #mass_norm_AA["n"]: natrual nterm massdiff, i.e., 1.0078
+                                        #nl[1]: nterm label mass
                                         if fabs(mod_nterm_mass - mass_norm_AA["n"] - nl[1]) < mass_tol:
                                             nterm_marker = nl[2]
                                             #mark this nterm, only one mod allowed
@@ -240,8 +241,10 @@ for tag in [ "light", "heavy" ]:
                                 all_seq = all_seq[:2] + nterm_marker + all_seq[2:]
                             scan_key = gene + ":" + all_seq + ":" + str(charge) + ":" + fn_ndx
                             scan_lst.append(scan_key + " " + com_fn + " " + str(scan_id) + " " + current_label + "\n")
-                            if scan_key not in cross_tab.keys():
-                                cross_tab[scan_key] = []
+                            #if scan_key not in cross_tab.keys():
+                            #    cross_tab[scan_key] = []
+                            #if fabs(mass-156.1263)<mass_tol:
+                            #  print "DB:", mass, scan_id, score
                             cross_tab[scan_key].append((mass, scan_id, score))
 
 #output
@@ -320,3 +323,4 @@ for scan_core in cross_tab.keys():
     id_scan = rank[-1][1]
     crossout.write(scan_core+" "+str(neutral_mass)+" "+str(id_scan)+"\n")
 crossout.close()
+
