@@ -42,7 +42,7 @@ for tag in [ "light", "heavy" ]:#
   #parse data
   #print ts
   for l in lines[1:]:
-    label = None
+    label = None #"light"
     es = l.split('\t')
     if len(es)>10:
       #fraction
@@ -82,8 +82,10 @@ for tag in [ "light", "heavy" ]:#
       skip = False
       for i, mod in enumerate(mods.split(';')[:-1]):
         mod = mod.split(',')
-        if mod[1] in L_labels: label = "light"
-        if mod[1] in H_labels: label = "heavy"
+        if tag=="light" and mod[1] in L_labels:
+          label = "light"
+        if tag=="heavy" and mod[1] in H_labels:
+          label = "heavy"
         #if mod[1] not in map_mod_sign.keys():
         #  skip = True
         #  break
