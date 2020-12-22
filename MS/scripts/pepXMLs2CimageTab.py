@@ -14,7 +14,7 @@ mass_norm_AA = {
 "P" : 97.05276,
 "V" : 99.06841,
 "T" :101.04768,
-"C" :103.00918,
+"C" :103.00918, #+57.021464
 "L" :113.08406,
 "I" :113.08406,
 "N" :114.04293,
@@ -50,30 +50,38 @@ cross_tab = defaultdict(list)
 sample_name = sys.argv[1]
 sc_cut = float(sys.argv[2])
 
+#light
 for mod in sys.argv[3].split('|'):
     elems = mod.split(':')
-    AA = elems[0]
-    mod_mass = float(elems[1])
-    tag = elems[2]
-    L_labels.append((AA, mod_mass, tag))
+    if len(elems) == 3:
+        AA = elems[0]
+        mod_mass = float(elems[1])
+        tag = elems[2]
+        L_labels.append((AA, mod_mass, tag))
+#heavy
 for mod in sys.argv[4].split('|'):
     elems = mod.split(':')
-    AA = elems[0]
-    mod_mass = float(elems[1])
-    tag = elems[2]
-    H_labels.append((AA, mod_mass, tag))
+    if len(elems) == 3:
+        AA = elems[0]
+        mod_mass = float(elems[1])
+        tag = elems[2]
+        H_labels.append((AA, mod_mass, tag))
+#normal
 for mod in sys.argv[5].split('|'):
     elems = mod.split(':')
-    AA = elems[0]
-    mod_mass = float(elems[1])
-    tag = elems[2]
-    if AA[0] == "n":
-        norm_nterm_labels.append((AA, mod_mass, tag))
-    else:
-        norm_labels.append((AA, mod_mass, tag))
+    if len(elems) == 3:
+        AA = elems[0]
+        mod_mass = float(elems[1])
+        tag = elems[2]
+        if AA[0] == "n":
+            norm_nterm_labels.append((AA, mod_mass, tag))
+        else:
+            norm_labels.append((AA, mod_mass, tag))
 
+print "quant labels"
 print L_labels
 print H_labels
+print "normal labels"
 print norm_labels
 print norm_nterm_labels
 
@@ -96,6 +104,7 @@ def mark_seq(uAA, seq, dAA, markers):
     ans = ans + seq[prev:] + "." + dAA
   return ans
 
+print "Parsing pepXML files..."
 for tag in [ "light", "heavy" ]:
     #build mod list
     std_AA = [] #mark AA that's modified but not marked (SILAC)
@@ -103,7 +112,7 @@ for tag in [ "light", "heavy" ]:
     nterm_labels = []
     if tag == "light":
         for m in L_labels:
-            if m[1] < mass_tol and m[2]=="-":
+            if m[1] < mass_tol and m[2]=="-": #??
                 std_AA.append(m[0])
             elif m[0][0]=="n":
                 nterm_labels.append(m)
@@ -111,7 +120,7 @@ for tag in [ "light", "heavy" ]:
                 mod_list.append(m)
     elif tag =="heavy":
         for m in H_labels:
-            if m[1] < mass_tol and m[2]=="-":
+            if m[1] < mass_tol and m[2]=="-": #??
                 std_AA.append(m[0])
             elif m[0][0]=="n":
                 nterm_labels.append(m)
@@ -120,12 +129,17 @@ for tag in [ "light", "heavy" ]:
     else:
         print "Warning tag error!"
         break
-    print tag
+    print "## ", tag
+    print "mod list"
     print mod_list
+    print "nter labels"
     print nterm_labels
+    print "others"
     print std_AA
 
     fn_lst = glob.glob( pepxml_dir[tag]+"/"+sample_name+"*.pepXML" )
+    print "Loading ..."
+    print fn_lst
     for fn in fn_lst: #for each fraction
         raw_fn = fn.split('/')[-1]
         elems = raw_fn.split('_')
@@ -173,7 +187,9 @@ for tag in [ "light", "heavy" ]:
                         delta_mass = float(hit.attrib['massdiff'])
                         num_miss_clv = int( hit.attrib['num_missed_cleavages'] )
 
+                        #TBD: for SILAC all light is needed, but for ABPP only labeled light is required
                         current_label = None
+                        #current_label = "light"
                         nterm_marker = "-"
                         markers = []
                         for mod_info in hit.findall('pep:modification_info', ns):

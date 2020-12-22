@@ -2,6 +2,8 @@
 import sys
 from math import fabs
 
+# grab mono/+1/+2 peak
+
 fn = sys.argv[1]
 
 dC = 1.0033548

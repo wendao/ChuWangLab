@@ -52,7 +52,7 @@ for tag in [ "light", "heavy" ]:#
       #params
       charge = es[ts["Charge"]]
       scan = es[ts["Scan_No"]]
-      mass = es[ts["Exp.MH+"]]
+      mass = es[ts["Exp.MH+"]] ##
       mods = es[ts["Modification"]]
       score = float(es[ts["Final_Score"]])
       #id

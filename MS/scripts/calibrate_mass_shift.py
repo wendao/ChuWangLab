@@ -2,6 +2,8 @@
 import sys
 from math import fabs
 
+#grab protein and peptide info from diffmass.txt
+
 fn = sys.argv[1]
 pro = sys.argv[2]
 pep = sys.argv[3]
